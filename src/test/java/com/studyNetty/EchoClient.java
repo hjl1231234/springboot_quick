@@ -27,7 +27,7 @@ public class EchoClient {
         this.port = port;
     }
 
-    public void start() {
+    public void start() throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
         b.group(group).channel(NioSocketChannel.class)
@@ -47,11 +47,13 @@ public class EchoClient {
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }finally {
+            group.shutdownGracefully().sync();
         }
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         if (args.length != 2) {
             System.err.println("usage    " + EchoClient.class.getSimpleName() + "<host><port>");
 

@@ -27,7 +27,7 @@ public class EchoClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
 //冲刷消息并  没有关闭节点,并发送条消息
-        ctx.writeAndFlush(Unpooled.copiedBuffer("netty rocks ", CharsetUtil.UTF_8));
+        ctx.writeAndFlush(Unpooled.copiedBuffer("client netty rocks ", CharsetUtil.UTF_8));
     }
 
     @Override

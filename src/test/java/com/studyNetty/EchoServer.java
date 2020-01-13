@@ -51,11 +51,11 @@ public class EchoServer {
             e.printStackTrace();
         }finally {
             //关闭eventloopgoup即可释放全部资源
-            try {
-                group.shutdownGracefully().sync();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                group.shutdownGracefully().sync();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
