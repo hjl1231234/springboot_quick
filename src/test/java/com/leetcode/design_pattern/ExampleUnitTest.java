@@ -7,7 +7,9 @@ import java.lang.reflect.Constructor;
 import java.lang.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
+import java.util.List;
 import java.util.PriorityQueue;
+import java.util.StringTokenizer;
 
 import static org.junit.Assert.*;
 
@@ -220,7 +222,114 @@ public class ExampleUnitTest {
 //            System.out.print(priorityQueue.poll().toString());
 //        }
     }
+
+
+    @Test
+    public void testInterpreter() {
+        //构建解析树
+        // Literal
+        Expression terminal1 = new TerminalExpression("A");
+        Expression terminal2 = new TerminalExpression("B");
+        Expression terminal3 = new TerminalExpression("C");
+        Expression terminal4 = new TerminalExpression("D");
+        // B or C
+        Expression alternation1 = new OrExpression(terminal2, terminal3);
+        // A Or (B C)
+        Expression alternation2 = new OrExpression(terminal1, alternation1);
+        // D And (A Or (B C))
+        Expression alternation3 = new AndExpression(terminal4, alternation2);
+
+
+        //进行判断
+        String context1 = "A D";
+        String context2 = "A B";
+        String context3 = "B C";
+
+        String context4 = "D B";
+        String context5 = "D C";
+
+
+        System.out.println(alternation3.interpret(context1));
+        System.out.println(alternation3.interpret(context2));
+        System.out.println(alternation3.interpret(context3));
+
+        System.out.println(alternation3.interpret(context4));
+        System.out.println(alternation3.interpret(context5));
+
+        StringTokenizer stringTokenizer = new StringTokenizer(context1);
+
+        while (stringTokenizer.hasMoreTokens()) {
+            String temp = stringTokenizer.nextToken();
+            if (temp.equals(null))
+                System.out.println(temp);
+        }
+    }
+
+    @Test
+    public void testIterator() {
+        //这里存储元素是int,如果有其他类型元素也可以。
+        Aggregate concreteAggregate = new ConcreteAggregate();
+        Iterator iterator = concreteAggregate.createIterator();
+        while (iterator.hasNext())
+            System.out.println(iterator.next());
+    }
+
+    @Test
+    public void testMediator() {
+        Alarm alarm = new Alarm();
+        CoffeePot coffeePot = new CoffeePot();
+        Calender calender = new Calender();
+        Sprinkler sprinkler = new Sprinkler();
+
+        Mediator mediator = new ConcreteMediator(alarm, coffeePot, calender, sprinkler);
+
+//        alarm.doAlarm();
+//        alarm.onEvent(mediator);
+        //上面的做法不是足够的
+        Colleague colleague = new Alarm();
+        colleague.onEvent(mediator);
+
+        colleague = new Sprinkler();
+        colleague.onEvent(mediator);
+
+    }
+
+
+    @Test
+    public void testMemento() {
+        Calculator calculator = new CalculatorImp();
+        PreviousCalculationToCareTaker memento;
+
+        //保存memento
+        memento = calculator.backupLastCalculation();
+        //回复memento
+        calculator.restorePreviousCalculation(memento);
+        System.out.println("result memo :" + calculator.getCalculationResult());
+
+        calculator.setFirstNumber(10);
+        calculator.setSecondNumber(100);
+        System.out.println("result :" + calculator.getCalculationResult());
+
+        //保存memento
+        memento = calculator.backupLastCalculation();
+        //存储memento
+
+
+        calculator.setSecondNumber(-1);
+        calculator.setFirstNumber(-10);
+        System.out.println("result :" + calculator.getCalculationResult());
+        calculator.restorePreviousCalculation(memento);
+        System.out.println("result memo :" + calculator.getCalculationResult());
+
+
+    }
 }
+
+
+/**
+ * hjl
+ * 单例模式1
+ */
 
 class Recognition {
     private final String id;
@@ -268,10 +377,7 @@ class Recognition {
     }
 }
 
-/**
- * hjl
- * 单例模式1
- */
+
 class SingletonOne {
     private static volatile SingletonOne singletonOne;
 
@@ -574,8 +680,392 @@ class Invoker {
 
 /**
  * 备忘录模式 和命令模式结合可变为可撤销命令的功能
- *java.io.Serializable
+ * java.io.Serializable
  */
+
+
+/**
+ * 解释器模式
+ * java.util.Pattern
+ * java.text.Normalizer
+ * All subclasses of java.text.Format
+ * javax.el.ELResolver
+ * <p>
+ * 以下是一个规则检验器实现，具有 and 和 or 规则，通过规则可以构建一颗解析树，用来检验一个文本是否满足解析树定义的规则。
+ * <p>
+ * 例如一颗解析树为 D And (A Or (B C))，文本 "D A" 满足该解析树定义的规则。
+ * <p>
+ * 不知道这个例子搞什么杰宝。
+ */
+abstract class Expression {
+    public abstract boolean interpret(String str);
+
+}
+
+class TerminalExpression extends Expression {
+    private String literal = null;
+
+    public TerminalExpression(String literal) {
+        this.literal = literal;
+    }
+
+    @Override
+    public boolean interpret(String str) {
+        //终止符都能判断吗？从未见过
+        StringTokenizer st = new StringTokenizer(str);
+        while (st.hasMoreTokens()) {
+            String test = st.nextToken();
+            if (literal.equals(test)) {
+                System.out.println("    " + test);
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+class AndExpression extends Expression {
+    private Expression expression1;
+    private Expression expression2;
+
+    public AndExpression(Expression expression1, Expression expression2) {
+        this.expression1 = expression1;
+        this.expression2 = expression2;
+    }
+
+    @Override
+    public boolean interpret(String str) {
+        return expression1.interpret(str) && expression2.interpret(str);
+    }
+}
+
+class OrExpression extends Expression {
+    private Expression expression1;
+    private Expression expression2;
+
+    public OrExpression(Expression expression1, Expression expression2) {
+        this.expression1 = expression1;
+        this.expression2 = expression2;
+    }
+
+    @Override
+    public boolean interpret(String str) {
+        return expression1.interpret(str) || expression2.interpret(str);
+    }
+}
+
+/**
+ * Iterator
+ * java.util.Iterator
+ * java.util.Enumeration
+ * <p>
+ * 提供一种顺序访问聚合对象元素的方法，并且不暴露聚合对象的内部表示。
+ */
+interface Aggregate<T> {
+    Iterator createIterator();
+}
+
+class ConcreteAggregate implements Aggregate {
+    private Integer[] items;
+
+    public ConcreteAggregate(Integer[] items) {
+        this.items = items;
+    }
+
+    public ConcreteAggregate() {
+        //预先保存10个元素
+//        items = new Integer[10];
+        items = new Integer[10];
+
+        for (int i = 0; i < items.length; i++) {
+            items[i] = i;
+        }
+    }
+
+
+    @Override
+    public Iterator createIterator() {
+        return new ConcreteIterator(items);
+    }
+}
+
+
+interface Iterator<T> {
+    T next();
+
+    boolean hasNext();
+
+}
+
+class ConcreteIterator<T> implements Iterator {
+    private T[] items;
+    private int position = 0;
+
+    public ConcreteIterator(T[] items, int position) {
+        this.items = items;
+        this.position = position;
+    }
+
+    public ConcreteIterator(T[] items) {
+        this.items = items;
+    }
+
+    @Override
+    public Object next() {
+        //返回元素并移至下一个
+        return items[position++];
+    }
+
+    @Override
+    public boolean hasNext() {
+        return position < items.length;
+    }
+
+
+}
+
+/**
+ * Mediator中介者模式
+ * All scheduleXXX() methods of java.util.Timer
+ * java.util.concurrent.Executor#execute()
+ * submit() and invokeXXX() methods of java.util.concurrent.ExecutorService
+ * scheduleXXX() methods of java.util.concurrent.ScheduledExecutorService
+ * java.lang.reflect.Method#invoke()
+ */
+
+abstract class Mediator {
+    public abstract void doEvent(String eventType);
+}
+
+
+abstract class Colleague {
+    public abstract void onEvent(Mediator mediator);
+}
+
+class Alarm extends Colleague {
+
+    @Override
+    public void onEvent(Mediator mediator) {
+        //相当于至传递一个message
+        mediator.doEvent("Alarm");
+    }
+
+    public void doAlarm() {
+        System.out.println("doAlarm!");
+    }
+}
+
+class CoffeePot extends Colleague {
+
+    @Override
+    public void onEvent(Mediator mediator) {
+        mediator.doEvent("CoffeePot");
+
+    }
+
+    public void doCoffeePot() {
+        System.out.println("doCoffeePot!");
+    }
+}
+
+class Calender extends Colleague {
+
+    @Override
+    public void onEvent(Mediator mediator) {
+        mediator.doEvent("Calender");
+
+    }
+
+    public void doCalender() {
+        System.out.println("doCalender!");
+    }
+}
+
+class Sprinkler extends Colleague {
+
+    @Override
+    public void onEvent(Mediator mediator) {
+        mediator.doEvent("Sprinkler");
+
+    }
+
+    public void doSprinkler() {
+        System.out.println("doSprinkler!");
+    }
+}
+
+class ConcreteMediator extends Mediator {
+    private Alarm alarm;
+    private CoffeePot coffeePot;
+    private Calender calender;
+    private Sprinkler sprinkler;
+
+    public ConcreteMediator(Alarm alarm, CoffeePot coffeePot, Calender calender, Sprinkler sprinkler) {
+        this.alarm = alarm;
+        this.coffeePot = coffeePot;
+        this.calender = calender;
+        this.sprinkler = sprinkler;
+    }
+
+    @Override
+    public void doEvent(String eventType) {
+
+        switch (eventType) {
+            case "Alarm":
+                alarm.doAlarm();
+                break;
+            case "CoffeePot":
+                coffeePot.doCoffeePot();
+                break;
+            case "Calender":
+                calender.doCalender();
+                break;
+            case "Sprinkler":
+                sprinkler.doSprinkler();
+                break;
+        }
+    }
+}
+
+/**
+ * memento备忘录模式
+ * 带存储功能计算器
+ * java.io.Serializable
+ */
+
+/**
+ * Memento Interface to Originator
+ * <p>
+ * This interface allows the originator to restore its state
+ */
+interface PreviousCalculationToOriginator {
+    int getFirstNumber();
+
+    int getSecondNumber();
+}
+
+/**
+ * Memento interface to CalculatorOperator (Caretaker)
+ */
+interface PreviousCalculationToCareTaker {
+    // no operations permitted for the caretaker
+}
+
+class PreviousCalculationImp implements PreviousCalculationToOriginator, PreviousCalculationToCareTaker {
+    private int firstNumber;
+    private int secondNumber;
+
+    public PreviousCalculationImp(int firstNumber, int secondNumber) {
+        this.firstNumber = firstNumber;
+        this.secondNumber = secondNumber;
+    }
+
+    @Override
+    public int getFirstNumber() {
+        return firstNumber;
+    }
+
+    @Override
+    public int getSecondNumber() {
+        return secondNumber;
+    }
+}
+
+interface Calculator {
+    // Create Memento
+    PreviousCalculationToCareTaker backupLastCalculation();
+
+    // setMemento
+    void restorePreviousCalculation(PreviousCalculationToCareTaker memento);
+
+    int getCalculationResult();
+
+    void setFirstNumber(int firstNumber);
+
+    void setSecondNumber(int secondNumber);
+
+}
+
+class CalculatorImp implements Calculator {
+    private int firstNumber;
+    private int secondNumber;
+
+    @Override
+    public PreviousCalculationToCareTaker backupLastCalculation() {
+        return new PreviousCalculationImp(firstNumber, secondNumber);
+    }
+
+    @Override
+    public void restorePreviousCalculation(PreviousCalculationToCareTaker memento) {
+        //我擦，还有这种强转方式？不如一开始写成PreviousCalculationToOriginator类，搞这么啰嗦
+        this.firstNumber = ((PreviousCalculationToOriginator) memento).getFirstNumber();
+        this.secondNumber = ((PreviousCalculationToOriginator) memento).getSecondNumber();
+
+    }
+
+    @Override
+    public int getCalculationResult() {
+        return firstNumber + secondNumber;
+    }
+
+    @Override
+    public void setFirstNumber(int firstNumber) {
+        this.firstNumber = firstNumber;
+
+    }
+
+    @Override
+    public void setSecondNumber(int secondNumber) {
+        this.secondNumber = secondNumber;
+    }
+}
+
+/**
+ * 观察者（Observer）
+ * java.util.Observer
+ * java.util.EventListener
+ * javax.servlet.http.HttpSessionBindingListener
+ * RxJava
+ *
+ */
+
+interface Subject{
+    public void registerObserve();
+    public void removeObserve();
+    public void notifyObervers();
+}
+//class ConcreteSubject implements Subject{
+//    private List<Observer> observers;
+//    private
+//
+//    @Override
+//    public void registerObserve() {
+//
+//    }
+//
+//    @Override
+//    public void removeObserve() {
+//
+//    }
+//
+//    @Override
+//    public void notifyObervers() {
+//
+//    }
+//}
+
+interface Observer{
+public void update();
+
+}
+class ConcreteObserver implements Observer{
+
+
+    @Override
+    public void update() {
+
+    }
+}
 
 
 /***

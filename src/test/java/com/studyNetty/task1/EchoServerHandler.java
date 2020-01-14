@@ -1,4 +1,4 @@
-package com.studyNetty;
+package com.studyNetty.task1;
 
 import com.firstapp.MySpringBootApp;
 import io.netty.buffer.ByteBuf;

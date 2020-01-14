@@ -1,4 +1,4 @@
-package com.studyNetty;
+package com.studyNetty.task1;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
