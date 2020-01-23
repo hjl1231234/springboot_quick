@@ -1,4 +1,4 @@
-package com.studyIO;
+package com.studyFragmentaryKnowledge;
 
 import java.io.*;
 

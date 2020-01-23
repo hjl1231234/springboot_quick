@@ -20,18 +20,20 @@ public class Study {
     }
 
     @Test
-    public void testInterrupt() {
+    public void testInterrupt() throws InterruptedException {
 //        Thread thread1 = new MyThread1();
 //        thread1.start();
+        //中断第一种方式
 //        thread1.interrupt();
 //        System.out.println("Main run");
 
-        Thread thread2=new MyThread2();
+        Thread thread2 = new MyThread2();
         thread2.start();
+        Thread.sleep(100);
+        //中断第二种方式
         thread2.interrupt();
 
         System.out.println("Main run");
-
 
 
     }
@@ -75,3 +77,4 @@ class MyThread2 extends Thread {
         System.out.println("Thread end");
     }
 }
+
